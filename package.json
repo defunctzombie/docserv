@@ -1,0 +1,16 @@
+{
+    "name": "docserv",
+    "version": "0.0.0",
+    "bin": {
+        "docserv": "./bin/docserv"
+    },
+    "dependencies": {
+        "express": "3.0.5",
+        "book": "1.2.0",
+        "hbs": "2.0.1",
+        "enchilada": "0.0.8",
+        "dom": "shtylman/dom",
+        "marked": "0.2.6",
+        "superagent": "shtylman/superagent"
+    }
+}

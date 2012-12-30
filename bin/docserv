@@ -1,0 +1,4 @@
+#!/usr/bin/env node
+require('../app');
+
+// vim: ft=javascript
