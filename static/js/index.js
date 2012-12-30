@@ -21,10 +21,10 @@ function cssbind(elem, map) {
         var subelem = elem.querySelector(selector);
         Object.defineProperty(binding, prop, {
             get: function() {
-                return subelem.innerText;
+                return subelem.textContent;
             },
             set: function(val) {
-                subelem.innerText = val;
+                subelem.textContent = val;
             }
         });
     });
