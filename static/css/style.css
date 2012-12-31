@@ -21,10 +21,8 @@ body {
 }
 
 #readme {
-    position: relative;
-    top: 0;
-    left: 160px;
     padding: 5px;
+    padding-left: 160px;
 }
 
 ul {
@@ -41,7 +39,7 @@ ul.sidenav li {
     border-bottom: 1px solid rgba(200, 200, 200, 0.35);
 }
 
-ul.sidenav li a {
+ul.sidenav li > a {
     height: 50px;
     width: 100%;
     display: inline-block;
@@ -62,4 +60,18 @@ ul.sidenav li.active a:after {
     right: -10px;
     top: 50%;
     margin-top: -10px;
+}
+
+.sidenav .name {
+    display: inline-block;
+}
+
+.sidenav .version {
+    color: #6c6c6c;
+    font-size: 0.8em;
+}
+
+.sidenav .icon {
+    display: none;
+    color: #800000;
 }

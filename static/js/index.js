@@ -66,6 +66,25 @@ get_modules(function(err, modules) {
         bound.name = module.name;
         bound.version = module.version;
 
+        if (!module.installed) {
+            dom(elem).find('.icon')
+                .show()
+                .attr('title', 'not installed')
+                .text(' not installed')
+        }
+        else if (module.extraneous) {
+            dom(elem).find('.icon')
+                .show()
+                .attr('title', 'extraneous')
+                .text(' extraneous')
+        }
+        else if (module.invalid) {
+            dom(elem).find('.icon')
+                .show()
+                .attr('title', 'invalid')
+                .text(' invalid version')
+        }
+
         // finally add to document
         sidenav.append(elem);
 

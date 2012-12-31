@@ -8,6 +8,7 @@ var marked = require('marked');
 var hbs = require('hbs');
 var enchilada = require('enchilada');
 var log = require('book');
+var semver = require('semver');
 
 var base = process.argv[2] || process.cwd();
 var module_dir = path.join(base, 'node_modules');
@@ -40,13 +41,16 @@ app.get('/modules', function(req, res, next) {
     var modules = {};
     modules[pkg.name] = {
         name: pkg.name,
-        version: pkg.version
+        version: pkg.version,
+        installed: true
     };
 
     Object.keys(pkg.dependencies || {}).forEach(function(name) {
         modules[name] = {
             name: name,
-            expected_version: pkg.dependencies[name]
+            // will be set to true if found in node_modules
+            installed: false,
+            version: pkg.dependencies[name]
         }
     });
 
@@ -75,6 +79,21 @@ app.get('/modules', function(req, res, next) {
                     extraneous: true
                 }
             }
+
+            mod.installed = true;
+
+            // check if installed module has valid version
+            if (!semver.satisfies(mod.version, mod.version)) {
+                mod.invalid = true;
+            }
+
+            // git versions are ignored
+            if (/^[a-z]/.test(mod.version[0])) {
+                mod.invalid = false;
+            }
+
+            // set module version to installed version
+            mod.version = version;
         });
 
         res.json(Object.keys(modules).map(function(name) {
