@@ -9,6 +9,7 @@ var hbs = require('hbs');
 var enchilada = require('enchilada');
 var log = require('book');
 var semver = require('semver');
+var hljs = require('highlight.js');
 
 var base = process.argv[2] || process.cwd();
 var module_dir = path.join(base, 'node_modules');
@@ -121,7 +122,12 @@ app.get('/modules/:module', function(req, res, next) {
         }
 
         res.json({
-            readme: marked(src)
+            readme: marked(src, {
+                gfm: true,
+                highlight: function(code, lang) {
+                    return hljs.highlightAuto(code).value;
+                }
+            })
         });
     });
 });

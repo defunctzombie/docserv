@@ -75,3 +75,7 @@ ul.sidenav li.active a:after {
     display: none;
     color: #800000;
 }
+
+pre code {
+    background: rgba(250, 250, 250, 0.6);
+}
