@@ -57,6 +57,12 @@ app.get('/modules', function(req, res, next) {
         }
     });
 
+    if (!fs.existsSync(module_dir)) {
+        return res.json(Object.keys(modules).map(function(name) {
+            return modules[name];
+        }));
+    }
+
     fs.readdir(module_dir, function(err, paths) {
         if (err) {
             return next(err);
@@ -114,6 +120,10 @@ app.get('/modules/:module', function(req, res, next) {
     // our own module
     if (module_name === our_info.name) {
         mod_path = base;
+    }
+
+    if (!fs.existsSync(mod_path)) {
+        return res.send(404);
     }
 
     var readme = wheresreadme(mod_path);
