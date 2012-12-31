@@ -11,6 +11,8 @@
         "enchilada": "0.0.8",
         "dom": "shtylman/dom",
         "marked": "0.2.6",
-        "superagent": "shtylman/superagent"
+        "superagent": "shtylman/superagent",
+        "highlight.js": "7.3.0",
+        "semver": "1.1.1"
     }
 }
