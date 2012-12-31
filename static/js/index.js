@@ -39,7 +39,11 @@ sidenav.on('click', 'li', function(ev) {
     request
         .get('/modules/' + dom(ev.currentTarget).data('module-name'))
         .end(function(res) {
-            readme.html(res.body.readme);
+            var html = res.body.readme;
+            if (!html) {
+                return readme.html('no readme file');
+            }
+            readme.html(html);
         });
 });
 

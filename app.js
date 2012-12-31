@@ -11,6 +11,8 @@ var log = require('book');
 var semver = require('semver');
 var hljs = require('highlight.js');
 
+var wheresreadme = require('./lib/wheresreadme');
+
 var base = process.argv[2] || process.cwd();
 var module_dir = path.join(base, 'node_modules');
 var our_info = require(base + '/package.json');
@@ -109,12 +111,16 @@ app.get('/modules/:module', function(req, res, next) {
     var module_name = req.param('module');
     var mod_path = path.join(module_dir, module_name);
 
-    // TODO alternate readmes, no readme, not in .json file, etc
-    var readme = path.join(mod_path, 'README.md');
-
+    // our own module
     if (module_name === our_info.name) {
-        readme = path.join(base, 'README.md');
+        mod_path = base;
     }
+
+    var readme = wheresreadme(mod_path);
+    if (!readme) {
+        return res.json({});
+    }
+
 
     fs.readFile(readme, 'utf8', function(err, src) {
         if (err) {
