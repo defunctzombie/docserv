@@ -155,6 +155,9 @@ app.get('/modules/:module', function(req, res, next) {
             readme: marked(src, {
                 gfm: true,
                 highlight: function(code, lang) {
+                    if (lang && hljs.LANGUAGES[lang]) {
+                        return hljs.highlight(lang, code).value;
+                    }
                     return hljs.highlightAuto(code).value;
                 }
             })
