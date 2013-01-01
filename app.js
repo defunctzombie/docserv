@@ -14,6 +14,7 @@ var optimist = require('optimist');
 var version = require('version');
 
 var wheresreadme = require('./lib/wheresreadme');
+var pkginfo = require('./package.json');
 
 var argv = optimist
     .describe('port', 'port to start docserv server on')
@@ -47,7 +48,7 @@ app.get('/', function(req, res, next) {
 app.get('/version', function(req, res, next) {
     version.fetch('docserv', function(err, version) {
         res.json({
-            current: our_info.version,
+            current: pkginfo.version,
             latest: version
         });
     });
