@@ -12,9 +12,6 @@ body {
 
 .sidenav {
     min-height: 100%;
-    position: absolute;
-    left: 0;
-    top: 0;
     width: 150px;
     background-color: rgba(200, 200, 200, 0.3);
     z-index: 100;
@@ -43,6 +40,7 @@ ul.sidenav li > a {
     height: 50px;
     width: 100%;
     display: inline-block;
+    cursor: pointer;
 }
 
 ul.sidenav li.active {
@@ -78,4 +76,14 @@ ul.sidenav li.active a:after {
 
 pre code {
     background: rgba(250, 250, 250, 0.6);
+}
+
+.sidediv {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    width: 160px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 10px;
 }

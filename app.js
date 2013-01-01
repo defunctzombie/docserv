@@ -75,6 +75,12 @@ app.get('/modules', function(req, res, next) {
 
         paths.forEach(function(module) {
             var pkgfile = path.join(module_dir, module, 'package.json');
+
+            // TODO(shtylman) maybe smarter? if no package.json skip
+            if (!fs.existsSync(pkgfile)) {
+                return;
+            }
+
             var pkg = JSON.parse(fs.readFileSync(pkgfile, 'utf8'));
 
             var name = pkg.name;
