@@ -10,10 +10,18 @@ var enchilada = require('enchilada');
 var log = require('book');
 var semver = require('semver');
 var hljs = require('highlight.js');
+var optimist = require('optimist');
 
 var wheresreadme = require('./lib/wheresreadme');
 
-var base = process.argv[2] || process.cwd();
+var argv = optimist
+    .describe('port', 'port to start docserv server on')
+    .default('port', 3000)
+    .argv;
+
+var port = argv.port;
+
+var base = argv._.shift() || process.cwd();
 var module_dir = path.join(base, 'node_modules');
 var our_info = require(base + '/package.json');
 
@@ -154,6 +162,6 @@ app.get('/modules/:module', function(req, res, next) {
     });
 });
 
-var server = app.listen(3000);
+var server = app.listen(port);
 log.info('serving docs on localhost:%d', server.address().port);
 
