@@ -2,7 +2,7 @@
 
 Simple documentation browser for your node project.
 
-![docserv](//shtylman.github.com/docserv/docserv_window.png)
+![docserv](http://shtylman.github.com/docserv/docserv_window.png)
 
 ## use
 
