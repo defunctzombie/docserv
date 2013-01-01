@@ -22,7 +22,7 @@ body {
     padding-left: 160px;
 }
 
-ul {
+ul.sidenav {
     margin: 0;
     padding: 0;
 }
