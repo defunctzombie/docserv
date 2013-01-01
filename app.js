@@ -11,6 +11,7 @@ var log = require('book');
 var semver = require('semver');
 var hljs = require('highlight.js');
 var optimist = require('optimist');
+var version = require('version');
 
 var wheresreadme = require('./lib/wheresreadme');
 
@@ -41,6 +42,15 @@ app.use(express.static(__dirname + '/static'));
 app.get('/', function(req, res, next) {
     res.locals.project = our_info;
     return res.render('index');
+});
+
+app.get('/version', function(req, res, next) {
+    version.fetch('docserv', function(err, version) {
+        res.json({
+            current: our_info.version,
+            latest: version
+        });
+    });
 });
 
 app.get('/modules', function(req, res, next) {

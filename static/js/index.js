@@ -98,3 +98,19 @@ get_modules(function(err, modules) {
     });
 });
 
+request.get('/version').end(function(res) {
+    var current = res.body.current;
+    var latest = res.body.latest;
+
+    if (current !== latest) {
+        dom('#new-version-banner')
+            .show()
+            .find('.version')
+            .text(latest);
+
+        dom('#new-version-banner').find('.close').on('click', function(ev) {
+            dom('#new-version-banner').hide();
+        });
+    }
+});
+

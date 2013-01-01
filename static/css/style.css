@@ -87,3 +87,30 @@ pre code {
     overflow-x: hidden;
     padding-right: 10px;
 }
+
+.hidden {
+    display: none;
+}
+
+#new-version-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background-color: rgba(200, 0, 0, 0.8);
+    z-index: 1000;
+    color: white;
+    line-height: 30px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.close {
+    float: right;
+    text-decoration: none;
+}
+
+.close:hover {
+    font-size: 1.1em;
+}
