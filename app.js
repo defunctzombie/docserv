@@ -116,10 +116,8 @@ app.get('/modules', function(req, res, next) {
 
             mod.installed = true;
 
-            // check if installed module has valid version
-            if (!semver.satisfies(mod.version, mod.version)) {
-                mod.invalid = true;
-            }
+            // check if installed module satisfies package.json requirement
+            mod.invalid = !semver.satisfies(version, mod.version);
 
             // git versions are ignored
             if (/^[a-z]/.test(mod.version[0])) {
