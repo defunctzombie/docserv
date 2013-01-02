@@ -102,17 +102,19 @@ app.get('/modules', function(req, res, next) {
                 return;
             }
 
-            var pkg = JSON.parse(fs.readFileSync(pkgfile, 'utf8'));
+            var pkginfo = JSON.parse(fs.readFileSync(pkgfile, 'utf8'));
 
-            var name = pkg.name;
-            var version = pkg.version;
+            var name = pkginfo.name;
+            var version = pkginfo.version;
+
+            var devDeps = pkg.devDependencies || {};
 
             var mod = modules[name];
             if (!mod) {
                 mod = modules[name] = {
                     name: name,
                     version: version,
-                    extraneous: true
+                    extraneous: !devDeps.hasOwnProperty(name)
                 }
             }
 
