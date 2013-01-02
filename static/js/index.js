@@ -1,6 +1,7 @@
 // vendor
 var dom = require('dom');
 var request = require('superagent');
+var semver = require('semver');
 
 // container for sidebar items
 var sidenav = dom('#modules-list');
@@ -63,27 +64,29 @@ get_modules(function(err, modules) {
         dom(elem).data('module-name', module.name);
 
         var bound = cssbind(elem, {
-            name: '.name',
+            name: '.name > span:last-of-type',
             version: '.version'
         });
 
         bound.name = module.name;
         bound.version = module.version;
 
+        var module_icon = dom(elem).find('.name .icon');
+
         if (!module.installed) {
-            dom(elem).find('.icon')
+            module_icon
                 .show()
                 .attr('title', 'not installed')
                 .text(' not installed')
         }
         else if (module.extraneous) {
-            dom(elem).find('.icon')
+            module_icon
                 .show()
                 .attr('title', 'extraneous')
                 .text(' extraneous')
         }
         else if (module.invalid) {
-            dom(elem).find('.icon')
+            module_icon
                 .show()
                 .attr('title', 'invalid')
                 .text(' invalid version')
@@ -91,6 +94,19 @@ get_modules(function(err, modules) {
 
         // finally add to document
         sidenav.append(elem);
+
+        // get latest version
+        request
+            .get('/modules/' + module.name + '/latest')
+            .end(function(res) {
+                var latest = res.body.version;
+                if (semver.gt(latest, module.version)) {
+                    dom(elem)
+                        .find('.newer-version')
+                        .attr('title', 'new version available: ' + latest)
+                        .css('display', 'inline');
+                }
+            });
 
         if (idx === 0) {
             dom(elem).emit('click', { bubbles: true });

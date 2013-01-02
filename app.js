@@ -36,6 +36,7 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'html');
 app.engine('html', hbs.__express);
 
+app.use(express.bodyParser());
 app.use(app.router);
 app.use(enchilada(__dirname + '/static'));
 app.use(express.static(__dirname + '/static'));
@@ -46,7 +47,8 @@ app.get('/', function(req, res, next) {
 });
 
 app.get('/version', function(req, res, next) {
-    version.fetch('docserv', function(err, version) {
+    var module = req.param('module') || 'docserv';
+    version.fetch(module, function(err, version) {
         res.json({
             current: pkginfo.version,
             latest: version
@@ -170,6 +172,15 @@ app.get('/modules/:module', function(req, res, next) {
                     return hljs.highlightAuto(code).value;
                 }
             })
+        });
+    });
+});
+
+app.get('/modules/:module/latest', function(req, res, next) {
+    var module = req.param('module');
+    version.fetch(module, function(err, version) {
+        res.json({
+            version: version
         });
     });
 });
