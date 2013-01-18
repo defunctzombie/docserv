@@ -84,7 +84,7 @@ pre code {
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 #new-version-banner {
@@ -111,7 +111,6 @@ pre code {
 }
 
 .sidenav .name .icon {
-    display: none;
     color: #800000;
 }
 

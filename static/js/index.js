@@ -75,19 +75,19 @@ get_modules(function(err, modules) {
 
         if (!module.installed) {
             module_icon
-                .show()
+                .removeClass('hidden')
                 .attr('title', 'not installed')
                 .text(' not installed')
         }
         else if (module.extraneous) {
             module_icon
-                .show()
+                .removeClass('hidden')
                 .attr('title', 'extraneous')
                 .text(' extraneous')
         }
         else if (module.invalid) {
             module_icon
-                .show()
+                .removeClass('hidden')
                 .attr('title', 'invalid')
                 .text(' invalid version')
         }
@@ -103,6 +103,7 @@ get_modules(function(err, modules) {
                 if (semver.gt(latest, module.version)) {
                     dom(elem)
                         .find('.newer-version')
+                        .removeClass('hidden')
                         .attr('title', 'new version available: ' + latest)
                         .css('display', 'inline');
                 }
