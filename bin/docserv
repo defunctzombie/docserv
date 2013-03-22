@@ -1,4 +1,20 @@
 #!/usr/bin/env node
-require('../app');
+var optimist = require('optimist');
+var log = require('book');
+
+var docserv = require('../app');
+
+var argv = optimist
+    .describe('port', 'port to start docserv server on')
+    .default('port', 3000)
+    .argv;
+
+var port = argv.port;
+
+var base = argv._.shift() || process.cwd();
+var app = docserv(base);
+var server = app.listen(port, function() {
+    log.info('serving docs on localhost:%d', server.address().port);
+});
 
 // vim: ft=javascript

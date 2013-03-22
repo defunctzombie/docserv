@@ -7,186 +7,177 @@ var express = require('express');
 var marked = require('marked');
 var hbs = require('hbs');
 var enchilada = require('enchilada');
-var log = require('book');
 var semver = require('semver');
 var hljs = require('highlight.js');
-var optimist = require('optimist');
 var version = require('version');
 
 var wheresreadme = require('./lib/wheresreadme');
 var pkginfo = require('./package.json');
 
-var argv = optimist
-    .describe('port', 'port to start docserv server on')
-    .default('port', 3000)
-    .argv;
+module.exports = function(base) {
+    var module_dir = path.join(base, 'node_modules');
+    var our_info = require(base + '/package.json');
 
-var port = argv.port;
+    // array of module information
+    var modules = [];
 
-var base = argv._.shift() || process.cwd();
-var module_dir = path.join(base, 'node_modules');
-var our_info = require(base + '/package.json');
+    var app = express();
 
-// array of module information
-var modules = [];
+    app.set('views', __dirname + '/views');
+    app.set('view engine', 'html');
+    app.engine('html', hbs.__express);
 
-var app = express();
+    app.use(express.bodyParser());
+    app.use(app.router);
+    app.use(enchilada(__dirname + '/static'));
+    app.use(express.static(__dirname + '/static'));
 
-app.set('views', __dirname + '/views');
-app.set('view engine', 'html');
-app.engine('html', hbs.__express);
-
-app.use(express.bodyParser());
-app.use(app.router);
-app.use(enchilada(__dirname + '/static'));
-app.use(express.static(__dirname + '/static'));
-
-app.get('/', function(req, res, next) {
-    res.locals.project = our_info;
-    return res.render('index');
-});
-
-app.get('/version', function(req, res, next) {
-    var module = req.param('module') || 'docserv';
-    version.fetch(module, function(err, version) {
-        res.json({
-            current: pkginfo.version,
-            latest: version
-        });
-    });
-});
-
-app.get('/modules', function(req, res, next) {
-    // read package.json for current project dir
-    // also read module_dir for list of actually installed modules
-    //
-    var pkg = JSON.parse(fs.readFileSync(path.join(base, 'package.json'), 'utf8'));
-
-    var modules = {};
-    modules[pkg.name] = {
-        name: pkg.name,
-        version: pkg.version,
-        installed: true
-    };
-
-    Object.keys(pkg.dependencies || {}).forEach(function(name) {
-        modules[name] = {
-            name: name,
-            // will be set to true if found in node_modules
-            installed: false,
-            version: pkg.dependencies[name]
-        }
+    app.get('/', function(req, res, next) {
+        res.locals.project = our_info;
+        return res.render('index');
     });
 
-    if (!fs.existsSync(module_dir)) {
-        return res.json(Object.keys(modules).map(function(name) {
-            return modules[name];
-        }));
-    }
+    app.get('/version', function(req, res, next) {
+        var module = req.param('module') || 'docserv';
+        version.fetch(module, function(err, version) {
+            res.json({
+                current: pkginfo.version,
+                latest: version
+            });
+        });
+    });
 
-    fs.readdir(module_dir, function(err, paths) {
-        if (err) {
-            return next(err);
-        }
+    app.get('/modules', function(req, res, next) {
+        // read package.json for current project dir
+        // also read module_dir for list of actually installed modules
+        //
+        var pkg = JSON.parse(fs.readFileSync(path.join(base, 'package.json'), 'utf8'));
 
-        // no hidden dirs
-        paths = paths.filter(function(p) {
-            return p[0] !== '.';
+        var modules = {};
+        modules[pkg.name] = {
+            name: pkg.name,
+            version: pkg.version,
+            installed: true
+        };
+
+        Object.keys(pkg.dependencies || {}).forEach(function(name) {
+            modules[name] = {
+                name: name,
+                // will be set to true if found in node_modules
+                installed: false,
+                version: pkg.dependencies[name]
+            }
         });
 
-        paths.forEach(function(module) {
-            var pkgfile = path.join(module_dir, module, 'package.json');
+        if (!fs.existsSync(module_dir)) {
+            return res.json(Object.keys(modules).map(function(name) {
+                return modules[name];
+            }));
+        }
 
-            // TODO(shtylman) maybe smarter? if no package.json skip
-            if (!fs.existsSync(pkgfile)) {
-                return;
+        fs.readdir(module_dir, function(err, paths) {
+            if (err) {
+                return next(err);
             }
 
-            var pkginfo = JSON.parse(fs.readFileSync(pkgfile, 'utf8'));
+            // no hidden dirs
+            paths = paths.filter(function(p) {
+                return p[0] !== '.';
+            });
 
-            var name = pkginfo.name;
-            var version = pkginfo.version;
+            paths.forEach(function(module) {
+                var pkgfile = path.join(module_dir, module, 'package.json');
 
-            var devDeps = pkg.devDependencies || {};
-
-            var mod = modules[name];
-            if (!mod) {
-                mod = modules[name] = {
-                    name: name,
-                    version: version,
-                    extraneous: !devDeps.hasOwnProperty(name)
+                // TODO(shtylman) maybe smarter? if no package.json skip
+                if (!fs.existsSync(pkgfile)) {
+                    return;
                 }
-            }
 
-            mod.installed = true;
+                var pkginfo = JSON.parse(fs.readFileSync(pkgfile, 'utf8'));
 
-            // check if installed module satisfies package.json requirement
-            mod.invalid = !semver.satisfies(version, mod.version);
+                var name = pkginfo.name;
+                var version = pkginfo.version;
 
-            // git versions are ignored
-            if (/^[a-z]/.test(mod.version[0])) {
-                mod.invalid = false;
-            }
+                var devDeps = pkg.devDependencies || {};
 
-            // set module version to installed version
-            mod.version = version;
-        });
-
-        res.json(Object.keys(modules).map(function(name) {
-            return modules[name];
-        }));
-    });
-});
-
-// get details for a given module
-// includes the readme
-app.get('/modules/:module', function(req, res, next) {
-    var module_name = req.param('module');
-    var mod_path = path.join(module_dir, module_name);
-
-    // our own module
-    if (module_name === our_info.name) {
-        mod_path = base;
-    }
-
-    if (!fs.existsSync(mod_path)) {
-        return res.send(404);
-    }
-
-    var readme = wheresreadme(mod_path);
-    if (!readme) {
-        return res.json({});
-    }
-
-
-    fs.readFile(readme, 'utf8', function(err, src) {
-        if (err) {
-            return next(err);
-        }
-
-        res.json({
-            readme: marked(src, {
-                gfm: true,
-                highlight: function(code, lang) {
-                    if (lang && hljs.LANGUAGES[lang]) {
-                        return hljs.highlight(lang, code).value;
+                var mod = modules[name];
+                if (!mod) {
+                    mod = modules[name] = {
+                        name: name,
+                        version: version,
+                        extraneous: !devDeps.hasOwnProperty(name)
                     }
-                    return hljs.highlightAuto(code).value;
                 }
-            })
+
+                mod.installed = true;
+
+                // check if installed module satisfies package.json requirement
+                mod.invalid = !semver.satisfies(version, mod.version);
+
+                // git versions are ignored
+                if (/^[a-z]/.test(mod.version[0])) {
+                    mod.invalid = false;
+                }
+
+                // set module version to installed version
+                mod.version = version;
+            });
+
+            res.json(Object.keys(modules).map(function(name) {
+                return modules[name];
+            }));
         });
     });
-});
 
-app.get('/modules/:module/latest', function(req, res, next) {
-    var module = req.param('module');
-    version.fetch(module, function(err, version) {
-        res.json({
-            version: version
+    // get details for a given module
+    // includes the readme
+    app.get('/modules/:module', function(req, res, next) {
+        var module_name = req.param('module');
+        var mod_path = path.join(module_dir, module_name);
+
+        // our own module
+        if (module_name === our_info.name) {
+            mod_path = base;
+        }
+
+        if (!fs.existsSync(mod_path)) {
+            return res.send(404);
+        }
+
+        var readme = wheresreadme(mod_path);
+        if (!readme) {
+            return res.json({});
+        }
+
+
+        fs.readFile(readme, 'utf8', function(err, src) {
+            if (err) {
+                return next(err);
+            }
+
+            res.json({
+                readme: marked(src, {
+                    gfm: true,
+                    highlight: function(code, lang) {
+                        if (lang && hljs.LANGUAGES[lang]) {
+                            return hljs.highlight(lang, code).value;
+                        }
+                        return hljs.highlightAuto(code).value;
+                    }
+                })
+            });
         });
     });
-});
 
-var server = app.listen(port);
-log.info('serving docs on localhost:%d', server.address().port);
+    app.get('/modules/:module/latest', function(req, res, next) {
+        var module = req.param('module');
+        version.fetch(module, function(err, version) {
+            res.json({
+                version: version
+            });
+        });
+    });
+
+    return app;
+};
 
